@@ -5,6 +5,7 @@
     @keydown.right="openCurrentDir"
     @keydown.left="closeCurrentDir"
     @keydown.down="selectNextFile($event)"
+    @keydown.up="selectPrevFile($event)"
   >
     Выделенный файл: {{ selectedPath }}
     <dir-component :item="rootDir" @select="select" />
@@ -93,6 +94,35 @@ export default {
         comp = parent;
         parent = comp.$parent;
       }
+    },
+    selectPrevFile(event) {
+      event.preventDefault();
+
+      let comp = this.selectedComponent;
+      let parent = comp.$parent;
+
+      if (parent === this) {
+        return;
+      }
+
+      let index = parent.$refs.childs.indexOf(comp);
+      if (index === 0) {
+        this.select(parent);
+        return;
+      }
+
+      comp = parent.$refs.childs[index - 1];
+
+      while (
+        comp.item.type === "directory" &&
+        comp.opened &&
+        comp.$refs.childs &&
+        comp.$refs.childs.length
+      ) {
+        comp = comp.$refs.childs[comp.$refs.childs.length - 1];
+      }
+
+      this.select(comp);
     },
   },
   components: {
