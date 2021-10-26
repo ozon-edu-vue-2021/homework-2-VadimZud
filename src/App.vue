@@ -2,13 +2,14 @@
   <div
     id="app"
     tabindex="0"
+    autofocus
     @keydown.right="openCurrentDir"
     @keydown.left="closeCurrentDir"
     @keydown.down="selectNextFile($event)"
     @keydown.up="selectPrevFile($event)"
   >
     Выделенный файл: {{ selectedPath }}
-    <dir-component :item="rootDir" @select="select" />
+    <dir-component :item="rootDir" @select="select" ref="root" />
   </div>
 </template>
 
@@ -28,6 +29,7 @@ export default {
       .then((response) => response.json())
       .then((newRoot) => {
         this.rootDir = newRoot;
+        this.select(this.$refs.root);
       });
   },
   computed: {
@@ -50,7 +52,13 @@ export default {
     openCurrentDir() {
       let comp = this.selectedComponent;
       if (comp && comp.item.type === "directory") {
-        comp.opened = true;
+        if (comp.opened) {
+          if (comp.$refs.childs && comp.$refs.childs.length) {
+            this.select(comp.$refs.childs[0]);
+          }
+        } else {
+          comp.opened = true;
+        }
       }
     },
     closeCurrentDir() {
@@ -58,7 +66,7 @@ export default {
       if (!comp) {
         return;
       }
-      if (comp.item.type !== "directory" || !comp.item.opened) {
+      if (comp.item.type !== "directory" || !comp.opened) {
         if (comp.$parent != this && comp.$parent.item.type == "directory") {
           comp = comp.$parent;
         }
