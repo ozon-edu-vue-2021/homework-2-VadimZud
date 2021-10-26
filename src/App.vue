@@ -4,10 +4,10 @@
     tabindex="0"
     @keydown.right="openCurrentDir"
     @keydown.left="closeCurrentDir"
-    @keydown.down="selectNextFile"
+    @keydown.down="selectNextFile($event)"
   >
     Выделенный файл: {{ selectedPath }}
-    <dir-component :item="rootDir" @select="onselect" />
+    <dir-component :item="rootDir" @select="select" />
   </div>
 </template>
 
@@ -35,7 +35,7 @@ export default {
     },
   },
   methods: {
-    onselect(comp) {
+    select(comp) {
       if (this.selectedComponent) {
         this.selectedComponent.selected = false;
       }
@@ -46,30 +46,10 @@ export default {
       });
       this.selectedComponent = comp;
     },
-    addParentInfo(item, parent) {
-      item.parent = parent;
-      if (item.type === "directory") {
-        for (let child of item.contents) {
-          this.addParentInfo(child, item);
-        }
-      }
-    },
-    onkeydown(event) {
-      switch (event.code) {
-        case "ArrowRight":
-          this.openCurrentDir();
-          break;
-        case "ArrowLeft":
-          this.closeCurrentDir();
-          break;
-      }
-    },
     openCurrentDir() {
-      if (
-        this.selectedComponent &&
-        this.selectedComponent.item.type === "directory"
-      ) {
-        this.selectedComponent.opened = true;
+      let comp = this.selectedComponent;
+      if (comp && comp.item.type === "directory") {
+        comp.opened = true;
       }
     },
     closeCurrentDir() {
@@ -79,39 +59,39 @@ export default {
       }
       if (comp.item.type !== "directory" || !comp.item.opened) {
         if (comp.$parent != this && comp.$parent.item.type == "directory") {
-          this.selectedComponent = comp.$parent;
+          comp = comp.$parent;
         }
       }
 
-      if (this.selectedComponent.item.type === "directory") {
-        this.selectedComponent.opened = false;
-        this.selectedComponent.selected = true;
+      if (comp.item.type === "directory") {
+        comp.opened = false;
+        this.select(comp);
       }
     },
-    selectNextFile() {
-      this.selectedComponent.selected = false;
-
+    selectNextFile(event) {
+      event.preventDefault();
       let comp = this.selectedComponent;
+
       if (
         comp.item.type === "directory" &&
         comp.opened &&
         comp.$refs.childs &&
         comp.$refs.childs.length
       ) {
-        this.selectedComponent = comp.$refs.childs[0];
-        this.selectedComponent.selected = true;
+        this.select(comp.$refs.childs[0]);
         return;
       }
 
       let parent = comp.$parent;
 
-      if (parent !== this) {
+      while (parent !== this) {
         let index = parent.$refs.childs.indexOf(comp);
         if (index < parent.$refs.childs.length - 1) {
-          this.selectedComponent = parent.$refs.childs[index + 1];
-          this.selectedComponent.selected = true;
+          this.select(parent.$refs.childs[index + 1]);
           return;
         }
+        comp = parent;
+        parent = comp.$parent;
       }
     },
   },
