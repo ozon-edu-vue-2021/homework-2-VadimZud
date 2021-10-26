@@ -1,33 +1,28 @@
 <template>
   <div>
     <div>
-      <file-component
-        :name="name"
-        v-bind="$attrs"
-        @select="onselect"
-        @click.native="toogleOpened"
-      >
-        <template v-slot:icon>
-          <dir-icon />
-        </template>
-      </file-component>
+      <span class="dir" :class="{ selected }" @click="select" ref="record">
+        <dir-icon />
+        {{ item.name }}
+      </span>
     </div>
     <div class="contents" v-if="opened">
-      <template v-for="item in contents">
+      <template v-for="child in item.contents">
         <dir-component
-          v-if="item.type === 'directory'"
-          v-bind:key="item.name"
-          v-bind="item"
-          :selected-path="selectedChild(item)"
-          :selected="isSelected(item)"
-          @select="onChildSelect"
+          v-if="child.type === 'directory'"
+          :key="child.name"
+          :item="child"
+          :base="fullPath"
+          @select="selectChild"
+          ref="childs"
         />
-        <div v-else v-bind:key="item.name">
+        <div v-else :key="child.name">
           <component
-            :is="componentMap[item.type]"
-            v-bind="item"
-            :selected="isSelected(item)"
-            @select="onChildSelect"
+            :is="componentMap[child.type]"
+            :item="child"
+            :base="fullPath"
+            @select="selectChild"
+            ref="childs"
           />
         </div>
       </template>
@@ -44,20 +39,17 @@ export default {
   name: "DirComponent",
   inheritAttrs: false,
   props: {
-    contents: {
-      type: Array,
-      default: () => [],
+    item: {
+      type: Object,
+      required: true,
     },
-    selectedPath: {
-      type: String,
-      default: "",
-    },
-    name: {
+    base: {
       type: String,
       default: "",
     },
   },
   data: () => ({
+    selected: false,
     opened: false,
     componentMap: {
       file: FileComponent,
@@ -65,38 +57,21 @@ export default {
     },
   }),
   computed: {
-    selectedPathComponents() {
-      return this.selectedPath.split("/");
-    },
-    selectedChildPath() {
-      return this.selectedPathComponents.slice(1).join("/");
+    fullPath() {
+      if (this.base) {
+        return `${this.base}/${this.item.name}`;
+      } else {
+        return this.item.name;
+      }
     },
   },
   methods: {
-    isSelected(item) {
-      return (
-        this.selectedPathComponents.length === 1 &&
-        item.name === this.selectedPathComponents[0]
-      );
-    },
-    selectedChild(item) {
-      if (
-        this.selectedPathComponents.length > 1 &&
-        item.name === this.selectedPathComponents[0]
-      ) {
-        return this.selectedChildPath;
-      } else {
-        return "";
-      }
-    },
-    onselect(fileName) {
-      this.$emit("select", fileName);
-    },
-    onChildSelect(filePath) {
-      this.$emit("select", `${this.name}/${filePath}`);
-    },
-    toogleOpened() {
+    select() {
+      this.$emit("select", this);
       this.opened = !this.opened;
+    },
+    selectChild(comp) {
+      this.$emit("select", comp);
     },
   },
   components: {
@@ -108,6 +83,19 @@ export default {
 </script>
 
 <style scoped>
+.dir {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.selected {
+  background-color: blue;
+  color: white;
+}
+
 .contents {
   margin-left: 20px;
   border-left: 1px solid #000;

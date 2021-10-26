@@ -1,32 +1,59 @@
 <template>
-  <file-component :title="target" v-bind="$attrs" @select="onselect">
-    <template v-slot:icon>
-      <link-icon />
-    </template>
-  </file-component>
+  <span class="link" :class="{ selected }" @click="select" ref="record">
+    <link-icon />
+    {{ item.name }}
+  </span>
 </template>
 
 <script>
 import LinkIcon from "./icons/LinkIcon.vue";
-import FileComponent from "./FileComponent.vue";
 
 export default {
   name: "LinkComponent",
-  inheritAttrs: false,
   props: {
-    target: {
+    item: {
+      type: Object,
+      required: true,
+    },
+    base: {
       type: String,
       default: "",
     },
   },
-  components: {
-    LinkIcon,
-    FileComponent,
+  data: () => ({
+    selected: false,
+  }),
+  computed: {
+    fullPath() {
+      if (this.base) {
+        return `${this.base}/${this.item.name}`;
+      } else {
+        return this.item.name;
+      }
+    },
   },
   methods: {
-    onselect(fileName) {
-      this.$emit("select", fileName);
+    select() {
+      this.$emit("select", this);
     },
+  },
+  components: {
+    LinkIcon,
   },
 };
 </script>
+
+<style scoped>
+.link {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.selected {
+  background-color: blue;
+  color: white;
+}
+</style>

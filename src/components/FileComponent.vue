@@ -1,9 +1,7 @@
 <template>
-  <span class="file" :class="{ selected }" @click="onclick" ref="fileElem">
-    <slot name="icon">
-      <file-icon />
-    </slot>
-    {{ name }}
+  <span class="file" :class="{ selected }" @click="select" ref="record">
+    <file-icon />
+    {{ item.name }}
   </span>
 </template>
 
@@ -13,30 +11,34 @@ import FileIcon from "./icons/FileIcon.vue";
 export default {
   name: "FileComponent",
   props: {
-    name: {
+    item: {
+      type: Object,
+      required: true,
+    },
+    base: {
       type: String,
       default: "",
     },
-    selected: {
-      type: Boolean,
-      default: false,
+  },
+  data: () => ({
+    selected: false,
+  }),
+  computed: {
+    fullPath() {
+      if (this.base) {
+        return `${this.base}/${this.item.name}`;
+      } else {
+        return this.item.name;
+      }
     },
   },
   methods: {
-    onclick() {
-      this.$emit("select", this.name);
+    select() {
+      this.$emit("select", this);
     },
   },
   components: {
     FileIcon,
-  },
-  updated() {
-    if (this.selected) {
-      this.$refs.fileElem.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    }
   },
 };
 </script>
