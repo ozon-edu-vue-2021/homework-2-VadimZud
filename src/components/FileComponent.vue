@@ -1,5 +1,5 @@
 <template>
-  <span class="file" :class="{ selected }" @click="onclick">
+  <span class="file" :class="{ selected }" @click="onclick" ref="fileElem">
     <slot name="icon">
       <file-icon />
     </slot>
@@ -30,6 +30,14 @@ export default {
   components: {
     FileIcon,
   },
+  updated() {
+    if (this.selected) {
+      this.$refs.fileElem.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  },
 };
 </script>
 
@@ -39,6 +47,7 @@ export default {
   align-items: center;
   padding: 5px;
   border-radius: 3px;
+  cursor: pointer;
 }
 
 .selected {

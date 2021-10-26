@@ -1,5 +1,5 @@
 <template>
-  <file-component :title="target" v-bind="$attrs">
+  <file-component :title="target" v-bind="$attrs" @select="onselect">
     <template v-slot:icon>
       <link-icon />
     </template>
@@ -16,12 +16,17 @@ export default {
   props: {
     target: {
       type: String,
-      default: '',
+      default: "",
     },
   },
   components: {
     LinkIcon,
     FileComponent,
+  },
+  methods: {
+    onselect(fileName) {
+      this.$emit("select", fileName);
+    },
   },
 };
 </script>
