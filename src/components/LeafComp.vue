@@ -1,12 +1,10 @@
 <template>
   <div
     class="leaf-comp"
-    :class="classes"
+    :class="{ selected }"
     tabindex="1"
-    @focus="onfocus"
-    @blur="onblur"
-    @click="toogleActivate"
-    @keydown.enter="toogleActivate"
+    @click="focus, toogleSelect"
+    @keydown.enter="toogleSelect"
     @keydown.up="focusPrev"
     @keydows.down="focusNext"
     @keydown.left="focusUp"
@@ -23,13 +21,34 @@ import BaseComp from "./BaseComp";
 export default {
   name: "LeafComp",
   extends: BaseComp,
-  computed: {
-    classes() {
-      return {
-        selected: this.active,
-      };
+  data() {
+    return {
+      selected: false,
+    };
+  },
+  methods: {
+    select() {
+      this.selected = true;
+      this.$emit("selected", this.name);
+    },
+    deselect() {
+      this.selected = false;
+      this.$emit("deselected");
+    },
+    toogleSelect() {
+      if (this.selected) {
+        this.deselect();
+      } else {
+        this.select();
+      }
     },
   },
+  unmounted() {
+    if (this.selected) {
+      this.$emit("deselected");
+    }
+  },
+  emits: ["selected", "deselected"],
 };
 </script>
 
@@ -37,13 +56,18 @@ export default {
 .leaf-comp {
   padding: 5px;
   width: fit-content;
+  display: flex;
+  align-items: center;
+  border: 1px solid transparent;
+  cursor: pointer;
 }
 
 .selected {
   background-color: aquamarine;
 }
 
-:focus {
-  border: 1px solid aqua;
+.leaf-comp:focus {
+  border-color: aqua;
+  outline: none;
 }
 </style>

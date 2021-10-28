@@ -4,26 +4,9 @@ export default {
             type: String,
             required: true,
         },
-        index: {
-            type: Number,
-            default: -1,
-        },
         focusAfterMount: {
             type: Boolean,
             default: false,
-        },
-    },
-    data() {
-        return {
-            active: false,
-        };
-    },
-    computed: {
-        emitObj() {
-            return {
-                name: this.name,
-                index: this.index,
-            };
         },
     },
     methods: {
@@ -33,32 +16,17 @@ export default {
         blur() {
             this.$el.blur();
         },
-        activate() {
-            this.active = true;
-            this.$emit('activate', this.emitObj);
-        },
-        deactivate() {
-            this.active = false;
-            this.$emit('deactivate', this.emitObj);
-        },
-        toogleActive() {
-            this.active = !this.active;
-            this.$emit(this.active ? 'activate' : 'deactivate', this.emitObj);
-        },
         onfocus() {
-            this.$emit('focus', this.emitObj);
-        },
-        onblur() {
-            this.$emit('blur', this.emitObj);
+            this.$el.scrollIntoView({ behavior: 'smooth' });
         },
         focusNext() {
-            this.$emit('focusNext', this.emitObj);
+            this.$emit('focusNext');
         },
         focusPrev() {
-            this.$emit('focusPrev', this.emitObj);
+            this.$emit('focusPrev');
         },
         focusUp() {
-            this.$emit('focusUp', this.emitObj);
+            this.$emit('focusUp');
         },
     },
     mounted() {
@@ -66,4 +34,5 @@ export default {
             this.focus();
         }
     },
+    emits: ['focusNext', 'focusPrev', 'focusUp'],
 }
